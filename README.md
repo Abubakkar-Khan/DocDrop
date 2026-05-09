@@ -6,11 +6,11 @@ DocDrop is a full-stack platform for authenticating and verifying the integrity 
 
 ## Technical Overview
 
-The application is architected as a monolithic Flask application with a Bootstrap 5 frontend for high performance and deployment simplicity.
+The application is architected with a decoupled frontend and backend to ensure scalability and maintainability.
 
 ### Key Technologies
-- **Server**: Flask (Python) with SQLAlchemy ORM.
-- **Frontend**: Bootstrap 5 (Vanilla JavaScript).
+- **Backend**: Flask (Python) with SQLAlchemy ORM.
+- **Frontend**: React 18 with TailwindCSS v4.
 - **Cryptography**: Python `cryptography` library (RSA-PSS, SHA-256).
 - **Authentication**: Stateless JWT (JSON Web Tokens).
 - **Database**: SQLite (Relational).
@@ -21,10 +21,10 @@ The application is architected as a monolithic Flask application with a Bootstra
 
 ```mermaid
 graph TB
-    subgraph UI ["User Interface (Bootstrap 5)"]
-        A[Login/Register] --> B[Dashboard]
-        B --> C[Upload & Sign]
-        B --> D[Inbox & Verification]
+    subgraph Client ["Client Interface (React)"]
+        A[Authentication] --> B[Document Management]
+        B --> C[Signing Interface]
+        B --> D[Verification Engine]
     end
 
     subgraph Server ["Application Server (Flask)"]
@@ -34,8 +34,14 @@ graph TB
         JWT --> DB[(Persistence Layer)]
     end
 
-    UI -->|AJAX/JSON| Server
+    Client -->|RESTful API| Server
 ```
+
+### Cryptographic Implementation
+The system strictly adheres to modern cryptographic standards:
+- **Hashing**: SHA-256 is used to generate immutable document digests.
+- **Signature Padding**: RSA-PSS (Probabilistic Signature Scheme) is employed to provide high security and resistance against chosen-ciphertext attacks.
+- **Key Storage**: 2048-bit RSA keys are generated per-user upon registration.
 
 ---
 
@@ -48,25 +54,35 @@ graph TB
 4. **Distribution**: The signed document package is made available to the intended recipient.
 
 ### Verification Logic
-1. **Digest Generation**: The recipient re-hashes the document content using SHA-256.
+1. **Digest Generation**: The recipient's system re-hashes the document content using SHA-256.
 2. **Signature Decryption**: The transmitted signature is decrypted using the sender's public key.
-3. **Integrity Validation**: The re-computed hash is compared against the decrypted signature hash.
+3. **Integrity Validation**: The re-computed hash is compared against the decrypted signature hash. A mismatch indicates data tampering or unauthorized modification.
 
 ---
 
 ## Installation and Deployment
 
-### Launch Instructions
+### Backend Setup
 1. Initialize the Python environment:
    ```bash
    cd backend
    pip install -r requirements.txt
    ```
-2. Launch the application:
+2. Launch the application server:
    ```bash
    python app.py
    ```
-3. Access the application at: `http://localhost:5000`
+
+### Frontend Setup
+1. Install dependencies:
+   ```bash
+   cd frontend
+   npm install
+   ```
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
 ---
 
@@ -75,13 +91,18 @@ graph TB
 ```text
 DocDrop/
 ├── backend/
-│   ├── app.py              # Application entry point & UI routes
+│   ├── app.py              # Application entry point
 │   ├── models/             # Relational data models
 │   ├── routes/             # API controller logic
 │   ├── services/           # Cryptographic and file services
-│   ├── static/             # Static assets (JS/CSS)
-│   ├── templates/          # HTML templates (Bootstrap 5)
 │   └── uploads/            # Encrypted document storage
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # Reusable UI components
+│   │   ├── pages/          # View controllers
+│   │   ├── context/        # State management
+│   │   └── api/            # HTTP client configuration
+│   └── index.html          # Main entry point
 └── README.md               # System documentation
 ```
 
@@ -89,3 +110,6 @@ DocDrop/
 
 ## Security Considerations
 The current implementation utilizes standard cryptographic libraries. For high-security environments, it is recommended to integrate Hardware Security Modules (HSMs) for private key management and move to a containerized deployment (Docker/Kubernetes).
+
+
+
