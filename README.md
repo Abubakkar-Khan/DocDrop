@@ -1,115 +1,112 @@
-# DocDrop — Secure Document Signing & Verification System
+# DocDrop: Secure Document Signing & Verification
 
-DocDrop is an educational full-stack web application designed to demonstrate the lifecycle of **Digital Signatures** using **RSA-2048** and **SHA-256**. It provides a visually intuitive, step-by-step breakdown of how cryptographic trust is established between a sender and a receiver.
-
----
-
-## 🧠 Project Vision
-The system is built with **Swiss Design Principles** (minimalism, high whitespace, and clean typography) to make complex cryptography easy to understand for students and professionals.
-
-- **Visual Learning**: Watch the hashing, signing, and verification process in real-time.
-- **Academic Demo**: Perfect for Information Security semester projects and vivas.
-- **Modern Tech**: Built with React 18, TailwindCSS v4, and Flask.
+DocDrop is a full-stack platform for authenticating and verifying the integrity of Word documents using industry-standard cryptographic primitives. The system implements a robust digital signature lifecycle utilizing RSA-2048 for asymmetric encryption and SHA-256 for secure message hashing.
 
 ---
 
-## 🏗️ Architecture
+## Technical Overview
+
+The application is architected with a decoupled frontend and backend to ensure scalability and maintainability.
+
+### Key Technologies
+- **Backend**: Flask (Python) with SQLAlchemy ORM.
+- **Frontend**: React 18 with TailwindCSS v4.
+- **Cryptography**: Python `cryptography` library (RSA-PSS, SHA-256).
+- **Authentication**: Stateless JWT (JSON Web Tokens).
+- **Database**: SQLite (Relational).
+
+---
+
+## System Architecture
 
 ```mermaid
 graph TB
-    subgraph Frontend ["Frontend (React + Tailwind v4)"]
-        A[Auth] --> B[Dashboard]
-        B --> C[Upload & Sign]
-        B --> D[Inbox]
-        D --> E[Step-by-Step Visualization]
+    subgraph Client ["Client Interface (React)"]
+        A[Authentication] --> B[Document Management]
+        B --> C[Signing Interface]
+        B --> D[Verification Engine]
     end
 
-    subgraph Backend ["Backend (Flask + Python)"]
-        API[REST API] --> Auth[JWT Auth]
-        API --> Crypto[Crypto Engine]
-        API --> Docx[Docx Service]
-        Auth --> DB[(SQLite)]
+    subgraph Server ["Application Server (Flask)"]
+        API[RESTful API] --> JWT[JWT Validation]
+        API --> Crypto[Cryptographic Service]
+        API --> Storage[FileSystem Service]
+        JWT --> DB[(Persistence Layer)]
     end
 
-    Frontend -->|HTTP/JSON| Backend
+    Client -->|RESTful API| Server
 ```
 
-### Key Components:
-- **Crypto Engine**: Handles RSA key generation, SHA-256 hashing, and PSS (Probabilistic Signature Scheme) signing/verification.
-- **Docx Service**: Extracts raw text content from `.docx` files for hashing.
-- **Visualization Panel**: A React-based state machine that animates each step of the signature pipeline.
+### Cryptographic Implementation
+The system strictly adheres to modern cryptographic standards:
+- **Hashing**: SHA-256 is used to generate immutable document digests.
+- **Signature Padding**: RSA-PSS (Probabilistic Signature Scheme) is employed to provide high security and resistance against chosen-ciphertext attacks.
+- **Key Storage**: 2048-bit RSA keys are generated per-user upon registration.
 
 ---
 
-## 🔐 Cryptographic Pipeline
+## Cryptographic Workflow
 
-The system implements the standard digital signature lifecycle:
+### Document Signing
+1. **Extraction**: Raw text is parsed from the uploaded OpenXML (.docx) file.
+2. **Hashing**: A SHA-256 digest is generated from the document payload.
+3. **Encryption**: The digest is signed using the sender's private RSA key with PSS padding.
+4. **Distribution**: The signed document package is made available to the intended recipient.
 
-### 1. Signing Phase (Sender)
-1. **Extraction**: The raw text is extracted from the uploaded `.docx` file.
-2. **Hashing**: A **SHA-256** hash is generated from the text.
-3. **Encryption (Signing)**: The hash is encrypted using the sender's **RSA-2048 Private Key**.
-4. **Transmission**: The original document and the digital signature are bundled and sent to the receiver.
-
-### 2. Verification Phase (Receiver)
-1. **Re-Hashing**: The receiver re-computes the SHA-256 hash of the document they received.
-2. **Decryption**: The receiver decrypts the signature using the **Sender's Public Key** to reveal the original hash.
-3. **Comparison**: If the re-computed hash matches the decrypted hash, the document is **Authentic** and **Unmodified**.
+### Verification Logic
+1. **Digest Generation**: The recipient's system re-hashes the document content using SHA-256.
+2. **Signature Decryption**: The transmitted signature is decrypted using the sender's public key.
+3. **Integrity Validation**: The re-computed hash is compared against the decrypted signature hash. A mismatch indicates data tampering or unauthorized modification.
 
 ---
 
-## 📂 Project Structure
+## Installation and Deployment
+
+### Backend Setup
+1. Initialize the Python environment:
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   ```
+2. Launch the application server:
+   ```bash
+   python app.py
+   ```
+
+### Frontend Setup
+1. Install dependencies:
+   ```bash
+   cd frontend
+   npm install
+   ```
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## Project Structure
 
 ```text
-Digital_Signature/
+DocDrop/
 ├── backend/
-│   ├── app.py              # Flask Factory
-│   ├── models/             # Database Schemas (User, Document)
-│   ├── routes/             # API Endpoints (Auth, Crypto, Docs)
-│   ├── services/           # Crypto & Docx Logic
-│   └── uploads/            # Document Storage
+│   ├── app.py              # Application entry point
+│   ├── models/             # Relational data models
+│   ├── routes/             # API controller logic
+│   ├── services/           # Cryptographic and file services
+│   └── uploads/            # Encrypted document storage
 ├── frontend/
 │   ├── src/
-│   │   ├── components/     # UI Components & Visualization Steps
-│   │   ├── pages/          # Full Page Layouts
-│   │   ├── context/        # Auth State Management
-│   │   └── api/            # Axios Client
-│   └── index.css           # Tailwind v4 Swiss Design System
-└── README.md
+│   │   ├── components/     # Reusable UI components
+│   │   ├── pages/          # View controllers
+│   │   ├── context/        # State management
+│   │   └── api/            # HTTP client configuration
+│   └── index.html          # Main entry point
+└── README.md               # System documentation
 ```
 
 ---
 
-## 🚀 Getting Started
-
-### Prerequisites
-- Python 3.9+
-- Node.js 18+
-
-### 1. Setup Backend
-```bash
-cd backend
-pip install -r requirements.txt
-python app.py
-```
-*Backend runs on `http://localhost:5000`*
-
-### 2. Setup Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-*Frontend runs on `http://localhost:5173`*
-
----
-
-## 🧪 Educational Features
-- **Explain Step**: Click the "Explain" button on any step to see the underlying mathematical logic.
-- **Tamper Demo**: Use the "Tamper" button in the Inbox to modify a document post-signing and watch the verification fail in real-time.
-- **Key Inspection**: View your generated RSA public and private keys (educational purposes only).
-
----
-
-## 🛡️ Security Disclaimer
-This project is for **educational purposes only**. While it uses industry-standard RSA and SHA-256, it stores private keys in a database to simplify the demonstration. Do not use this for production document signing.
+## Security Considerations
+The current implementation utilizes standard cryptographic libraries. For high-security environments, it is recommended to integrate Hardware Security Modules (HSMs) for private key management and move to a containerized deployment (Docker/Kubernetes).
