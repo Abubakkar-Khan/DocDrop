@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocDrop | Secure Document Authentication</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #2563eb; --surface: #f8fafc; --text: #0f172a; --text-muted: #64748b; }
+        body { font-family: 'Inter', sans-serif; background: var(--surface); color: var(--text); overflow-x: hidden; }
+        .card { border: none; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+        .btn-primary { background: var(--primary); border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: 600; }
+        .nav-link { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 0.5rem; }
+        .nav-link.active { background: #eff6ff; color: var(--primary); }
+        .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+        .step-card { border-left: 4px solid #e2e8f0; padding-left: 1.5rem; margin-bottom: 2rem; position: relative; }
+        .step-card.active { border-left-color: var(--primary); }
+        .hidden { display: none !important; }
+        .navbar-brand { font-weight: 800; letter-spacing: -0.02em; color: var(--primary) !important; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg bg-white border-bottom py-3">
+        <div class="container">
+            <a class="navbar-brand" href="/">DocDrop</a>
+            <div id="user-pill" class="hidden d-flex align-items-center">
+                <span id="display-user" class="small fw-semibold me-3 text-muted"></span>
+                <button onclick="logout()" class="btn btn-sm btn-outline-danger px-3">Sign Out</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <!-- AUTH -->
+        <div id="section-auth" class="row justify-content-center hidden">
+            <div class="col-md-5 col-lg-4">
+                <div class="card p-5">
+                    <h2 class="h4 fw-bold mb-4 text-center">Sign In</h2>
+                    <div id="auth-err" class="alert alert-danger hidden small"></div>
+                    <form onsubmit="return false;">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted uppercase">Username</label>
+                            <input type="text" id="in-user" class="form-control form-control-lg border-0 bg-light" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-muted uppercase">Password</label>
+                            <input type="password" id="in-pass" class="form-control form-control-lg border-0 bg-light" required>
+                        </div>
+                        <button onclick="doAuth('/auth/login')" class="btn btn-primary w-100 shadow-sm mb-2">Login</button>
+                        <button onclick="doAuth('/auth/register')" class="btn btn-link w-100 text-decoration-none text-muted small">New? Create Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="section-dash" class="row hidden">
+            <div class="col-md-3">
+                <div class="nav flex-column nav-pills me-3">
+                    <button class="nav-link text-start active" id="btn-tab-upload" onclick="switchTab('upload')">Upload & Sign</button>
+                    <button class="nav-link text-start" id="btn-tab-inbox" onclick="switchTab('inbox')">Inbox</button>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                <!-- UPLOAD VIEW -->
+                <div id="tab-upload">
+                    <div class="card p-5">
+                        <h3 class="fw-bold h5 mb-3">Upload Document</h3>
+                        <p class="text-muted small mb-4">Digitally sign your Word documents using RSA-2048 + SHA-256.</p>
+                        <div class="mb-4">
+                            <input type="file" id="doc-file" class="form-control border-dashed py-4" onchange="upload()">
+                        </div>
+                        <div id="up-status"></div>
+                        <div id="sign-flow" class="hidden mt-4 pt-4 border-top">
+                            <label class="form-label fw-bold small text-muted uppercase">Send to Receiver</label>
+                            <div class="input-group">
+                                <select id="sel-user" class="form-select border-0 bg-light"></select>
+                                <button onclick="signAndSend()" class="btn btn-primary px-4">Sign & Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INBOX VIEW -->
+                <div id="tab-inbox" class="hidden">
+                    <div class="card p-5">
+                        <h3 class="fw-bold h5 mb-4">Received Documents</h3>
+                        <div id="inbox-content" class="list-group list-group-flush"></div>
+                    </div>
+                    
+                    <!-- VIZ AREA -->
+                    <div id="viz-area" class="mt-5 hidden">
+                        <div class="card p-5 border-2 border-primary-subtle">
+                            <h4 id="res-title" class="fw-bold mb-4"></h4>
+                            <div id="steps-render"></div>
+                            <div class="mt-4 d-flex gap-2">
+                                <button onclick="changeStep(-1)" class="btn btn-light">Back</button>
+                                <button onclick="changeStep(1)" class="btn btn-primary">Next Step</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = "/api";
+        let token = localStorage.getItem("t");
+        let activeSteps = [];
+        let activeIdx = 0;
+
+        const $ = (id) => document.getElementById(id);
+        const headers = () => ({ "Content-Type": "application/json", "Authorization": `Bearer ${token}` });
+
+        async function doAuth(p) {
+            const username = $("in-user").value, password = $("in-pass").value;
+            try {
+                const r = await fetch(API+p, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({username, password}) });
+                const d = await r.json();
+                if (!r.ok) throw d;
+                localStorage.setItem("t", d.access_token); localStorage.setItem("u", d.user.username);
+                window.location.reload();
+            } catch(e) { $("auth-err").innerText = e.error || "Error"; $("auth-err").classList.remove("hidden"); }
+        }
+
+        function logout() { localStorage.clear(); window.location.reload(); }
+
+        async function upload() {
+            const f = $("doc-file").files[0]; if (!f) return;
+            const fd = new FormData(); fd.append("file", f);
+            const r = await fetch(`${API}/documents/upload`, { method: "POST", headers: {"Authorization": `Bearer ${token}`}, body: fd });
+            const d = await r.json();
+            if (r.ok) {
+                window.lastDocId = d.document.id;
+                $("up-status").innerHTML = `<div class="text-success small fw-bold mt-2">✓ ${f.name} Ready.</div>`;
+                $("sign-flow").classList.remove("hidden");
+                const ur = await fetch(API+"/auth/users", { headers: headers() });
+                const ud = await ur.json();
+                $("sel-user").innerHTML = '<option value="">Select Receiver...</option>' + ud.users.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+            }
+        }
+
+        async function signAndSend() {
+            const rid = $("sel-user").value; if (!rid) return;
+            await fetch(`${API}/documents/sign`, { method:"POST", headers: headers(), body: JSON.stringify({document_id: window.lastDocId}) });
+            await fetch(`${API}/documents/send`, { method:"POST", headers: headers(), body: JSON.stringify({document_id: window.lastDocId, receiver_id: rid}) });
+            alert("Signed & Sent!"); window.location.reload();
+        }
+
+        async function loadInbox() {
+            const r = await fetch(API+"/documents/inbox", { headers: headers() });
+            const d = await r.json();
+            $("inbox-content").innerHTML = d.documents.map(x => `
+                <div class="list-group-item d-flex justify-content-between align-items-center py-4 px-0">
+                    <div><div class="fw-bold">${x.original_filename}</div><div class="text-muted small">From: ${x.sender_username}</div></div>
+                    <div class="btn-group">
+                        <button onclick="verify('${x.id}')" class="btn btn-sm btn-primary">Verify</button>
+                        <button onclick="tamper('${x.id}')" class="btn btn-sm btn-outline-danger">Tamper</button>
+                    </div>
+                </div>`).join('') || '<p class="text-muted py-3">No documents received.</p>';
+        }
+
+        async function tamper(id) { await fetch(`${API}/documents/${id}/tamper`, {method:"POST", headers: headers()}); loadInbox(); }
+
+        async function verify(id) {
+            const r = await fetch(`${API}/crypto/verify/${id}`, {method:"POST", headers: headers()});
+            const d = await r.json();
+            const s = d.steps;
+            $("res-title").innerText = d.result === "verified" ? "✓ Signature Authentic" : "✗ Integrity Violated!";
+            $("res-title").className = d.result === "verified" ? "fw-bold text-success mb-4" : "fw-bold text-danger mb-4";
+            activeSteps = [
+                { t: "1. Document Hashing", d: "Generate SHA-256 digest from document text.", c: `Hash: <span class="text-primary">${s.recomputed_hash}</span>` },
+                { t: "2. RSA Decryption", d: "Decrypting the digital signature using Sender's Public Key.", c: `Hash from Signature: <span class="text-success">${s.original_hash}</span>` },
+                { t: "3. Integrity Match", d: "Do the hashes match?", c: `Status: <span class="fw-bold">${s.hashes_match ? "VALID" : "INVALID"}</span>` }
+            ];
+            activeIdx = 0; renderSteps(); $("viz-area").classList.remove("hidden");
+        }
+
+        function renderSteps() {
+            $("steps-render").innerHTML = activeSteps.map((s, i) => `
+                <div class="step-card ${i===activeIdx?'active':''}" style="display:${i===activeIdx?'block':'none'}">
+                    <div class="fw-bold text-primary small uppercase mb-1">${s.t}</div>
+                    <div class="text-muted small mb-3">${s.d}</div>
+                    <div class="mono p-3 bg-light rounded break-all border">${s.c}</div>
+                </div>`).join('');
+        }
+        function changeStep(n) { activeIdx = Math.max(0, Math.min(2, activeIdx + n)); renderSteps(); }
+
+        function switchTab(t) {
+            ["upload", "inbox"].forEach(x => { $(`tab-${x}`).classList.add("hidden"); $(`btn-tab-${x}`).classList.remove("active"); });
+            $(`tab-${t}`).classList.remove("hidden"); $(`btn-tab-${t}`).classList.add("active");
+            if (t === 'inbox') loadInbox();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("DocDrop Initialized");
+            if (token) {
+                $("section-dash").classList.remove("hidden");
+                $("user-pill").classList.remove("hidden");
+                $("display-user").innerText = localStorage.getItem("u");
+                loadInbox();
+            } else {
+                $("section-auth").classList.remove("hidden");
+            }
+        });
+    </script>
+</body>
+</html>
