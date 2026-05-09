@@ -111,3 +111,8 @@ DocDrop/
 ## Security Considerations
 The current implementation utilizes standard cryptographic libraries. For high-security environments, it is recommended to integrate Hardware Security Modules (HSMs) for private key management and move to a containerized deployment (Docker/Kubernetes).
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> de179d4d9d0f5120e844d83c1093822fefac537b
