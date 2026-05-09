@@ -1,5 +1,5 @@
 """
-EduSign — Flask Application Factory
+DocDrop — Flask Application Factory
 
 Secure Document Signing & Verification System
 Educational demonstration of RSA + SHA-256 digital signatures
@@ -46,7 +46,7 @@ def create_app():
     # Health check endpoint
     @app.route("/api/health")
     def health():
-        return {"status": "ok", "service": "EduSign API"}, 200
+        return {"status": "ok", "service": "DocDrop API"}, 200
 
     return app
 

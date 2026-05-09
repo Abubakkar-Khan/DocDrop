@@ -72,7 +72,7 @@ export default function LoginPage() {
             <HiOutlineShieldCheck className="w-8 h-8 text-white" />
           </motion.div>
           <h1 className="text-3xl font-bold text-text tracking-tight">
-            EduSign
+            DocDrop
           </h1>
           <p className="text-text-muted mt-1 text-sm">
             Secure Document Signing & Verification

@@ -1,5 +1,5 @@
 """
-EduSign Database Models
+DocDrop Database Models
 """
 from flask_sqlalchemy import SQLAlchemy
 

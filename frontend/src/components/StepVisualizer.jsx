@@ -1,6 +1,6 @@
 /**
  * StepVisualizer — Step-by-step cryptographic pipeline visualization
- * The KEY educational feature of EduSign
+ * The KEY educational feature of DocDrop
  */
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";

@@ -1,5 +1,5 @@
 """
-EduSign Configuration
+DocDrop Configuration
 """
 import os
 

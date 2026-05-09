@@ -1,6 +1,6 @@
-# EduSign — Secure Document Signing & Verification System
+# DocDrop — Secure Document Signing & Verification System
 
-EduSign is an educational full-stack web application designed to demonstrate the lifecycle of **Digital Signatures** using **RSA-2048** and **SHA-256**. It provides a visually intuitive, step-by-step breakdown of how cryptographic trust is established between a sender and a receiver.
+DocDrop is an educational full-stack web application designed to demonstrate the lifecycle of **Digital Signatures** using **RSA-2048** and **SHA-256**. It provides a visually intuitive, step-by-step breakdown of how cryptographic trust is established between a sender and a receiver.
 
 ---
 

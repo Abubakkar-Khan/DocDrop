@@ -1,5 +1,5 @@
 /**
- * Utility formatters for EduSign
+ * Utility formatters for DocDrop
  */
 
 /**

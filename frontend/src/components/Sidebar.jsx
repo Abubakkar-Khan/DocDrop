@@ -46,7 +46,7 @@ export default function Sidebar() {
           </div>
           <div>
             <h1 className="text-lg font-bold text-text tracking-tight leading-none">
-              EduSign
+              DocDrop
             </h1>
             <p className="text-[10px] text-text-light uppercase tracking-widest mt-0.5">
               Digital Signatures
