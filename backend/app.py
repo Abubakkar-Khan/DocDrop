@@ -7,7 +7,7 @@ Educational demonstration of RSA + SHA-256 digital signatures
 import os
 from datetime import timedelta
 
-from flask import Flask
+from flask import Flask, render_template
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
@@ -16,7 +16,7 @@ from models import db
 
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder="templates", static_folder="static")
     app.config.from_object(Config)
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(
         seconds=app.config.get("JWT_ACCESS_TOKEN_EXPIRES", 86400)
@@ -42,6 +42,11 @@ def create_app():
     # Create database tables
     with app.app_context():
         db.create_all()
+
+    # Main UI route
+    @app.route("/")
+    def index():
+        return render_template("index.html")
 
     # Health check endpoint
     @app.route("/api/health")
