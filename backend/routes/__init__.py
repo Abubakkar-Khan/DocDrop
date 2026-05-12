@@ -1,3 +1,0 @@
-"""
-DocDrop Route Blueprints
-"""

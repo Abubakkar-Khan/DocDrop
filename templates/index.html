@@ -156,12 +156,23 @@
             const d = await r.json();
             $("inbox-content").innerHTML = d.documents.map(x => `
                 <div class="list-group-item d-flex justify-content-between align-items-center py-4 px-0">
-                    <div><div class="fw-bold">${x.original_filename}</div><div class="text-muted small">From: ${x.sender_username}</div></div>
+                    <div>
+                        <div class="fw-bold">${x.original_filename || x.filename}</div>
+                        <div class="text-muted small">From: ${x.sender_username}</div>
+                    </div>
                     <div class="btn-group">
+                        <button onclick="downloadDoc('${x.id}', '${x.original_filename || x.filename}')" class="btn btn-sm btn-outline-primary">Download</button>
                         <button onclick="verify('${x.id}')" class="btn btn-sm btn-primary">Verify</button>
                         <button onclick="tamper('${x.id}')" class="btn btn-sm btn-outline-danger">Tamper</button>
                     </div>
                 </div>`).join('') || '<p class="text-muted py-3">No documents received.</p>';
+        }
+
+        async function downloadDoc(id, name) {
+            const r = await fetch(`${API}/documents/${id}/download`, { headers: headers() });
+            const blob = await r.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a"); a.href = url; a.download = name; a.click();
         }
 
         async function tamper(id) { await fetch(`${API}/documents/${id}/tamper`, {method:"POST", headers: headers()}); loadInbox(); }
@@ -173,9 +184,10 @@
             $("res-title").innerText = d.result === "verified" ? "✓ Signature Authentic" : "✗ Integrity Violated!";
             $("res-title").className = d.result === "verified" ? "fw-bold text-success mb-4" : "fw-bold text-danger mb-4";
             activeSteps = [
-                { t: "1. Document Hashing", d: "Generate SHA-256 digest from document text.", c: `Hash: <span class="text-primary">${s.recomputed_hash}</span>` },
-                { t: "2. RSA Decryption", d: "Decrypting the digital signature using Sender's Public Key.", c: `Hash from Signature: <span class="text-success">${s.original_hash}</span>` },
-                { t: "3. Integrity Match", d: "Do the hashes match?", c: `Status: <span class="fw-bold">${s.hashes_match ? "VALID" : "INVALID"}</span>` }
+                { t: "1. Certificate Check", d: "Verify the sender's identity using their X.509 Certificate.", c: `Subject: <span class="text-primary">${s.sender_username}</span><br><br>Certificate (PEM):<br><pre class="small" style="font-size:8px">${s.cert}</pre>` },
+                { t: "2. Document Hashing", d: "Generate SHA-256 digest from document text.", c: `Hash: <span class="text-primary">${s.recomputed_hash}</span>` },
+                { t: "3. RSA Decryption", d: "Decrypting the digital signature using Public Key extracted from Certificate.", c: `Hash from Signature: <span class="text-success">${s.original_hash}</span>` },
+                { t: "4. Integrity Match", d: "Do the hashes match?", c: `Status: <span class="fw-bold">${s.hashes_match ? "VALID" : "INVALID"}</span>` }
             ];
             activeIdx = 0; renderSteps(); $("viz-area").classList.remove("hidden");
         }
@@ -185,10 +197,10 @@
                 <div class="step-card ${i===activeIdx?'active':''}" style="display:${i===activeIdx?'block':'none'}">
                     <div class="fw-bold text-primary small uppercase mb-1">${s.t}</div>
                     <div class="text-muted small mb-3">${s.d}</div>
-                    <div class="mono p-3 bg-light rounded break-all border">${s.c}</div>
+                    <div class="mono p-3 bg-light rounded break-all border" style="max-height: 200px; overflow: auto;">${s.c}</div>
                 </div>`).join('');
         }
-        function changeStep(n) { activeIdx = Math.max(0, Math.min(2, activeIdx + n)); renderSteps(); }
+        function changeStep(n) { activeIdx = Math.max(0, Math.min(3, activeIdx + n)); renderSteps(); }
 
         function switchTab(t) {
             ["upload", "inbox"].forEach(x => { $(`tab-${x}`).classList.add("hidden"); $(`btn-tab-${x}`).classList.remove("active"); });
