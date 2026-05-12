@@ -14,6 +14,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(256), nullable=False)
     public_key = db.Column(db.Text, nullable=False)    # PEM format
+    certificate = db.Column(db.Text, nullable=True)    # PEM format X.509
     private_key = db.Column(db.Text, nullable=False)   # PEM format (educational only!)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -39,6 +40,7 @@ class User(db.Model):
         }
         if include_keys:
             data["public_key"] = self.public_key
+            data["certificate"] = self.certificate
             data["private_key"] = self.private_key
         return data
 

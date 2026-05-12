@@ -9,6 +9,7 @@ import HashingStep from "./steps/HashingStep";
 import SigningStep from "./steps/SigningStep";
 import TransmissionStep from "./steps/TransmissionStep";
 import VerificationStep from "./steps/VerificationStep";
+import CertificateStep from "./steps/CertificateStep";
 
 const signingSteps = [
   { key: "hashing", label: "Hashing", Component: HashingStep },
@@ -18,6 +19,7 @@ const signingSteps = [
 
 const verificationSteps = [
   { key: "hashing", label: "Re-Hashing", Component: HashingStep },
+  { key: "certificate", label: "Certificate", Component: CertificateStep },
   { key: "transmission", label: "Transmission", Component: TransmissionStep },
   { key: "verification", label: "Verification", Component: VerificationStep },
 ];

@@ -42,8 +42,11 @@ def verify_document(doc_id):
     hashes_match = recomputed_hash == doc.hash_value
 
     # Step 3: Verify RSA signature (authenticity)
+    # Use certificate if available, otherwise fallback to public key
+    key_for_verification = sender.certificate if sender.certificate else sender.public_key
+    
     signature_valid = verify_signature(
-        doc.hash_value, doc.signature, sender.public_key
+        doc.hash_value, doc.signature, key_for_verification
     )
 
     # Determine overall result
@@ -69,6 +72,7 @@ def verify_document(doc_id):
             # Step 2: Signing info
             "sender_username": sender.username,
             "sender_public_key": sender.public_key,
+            "sender_certificate": sender.certificate,
             "signature": doc.signature,
             "signature_algorithm": "RSA-PSS (2048-bit)",
 

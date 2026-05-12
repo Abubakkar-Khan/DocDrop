@@ -10,6 +10,9 @@ This module provides the core cryptographic functions:
 import base64
 import hashlib
 
+from datetime import datetime, timedelta, timezone
+from cryptography import x509
+from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.exceptions import InvalidSignature
@@ -39,6 +42,49 @@ def generate_key_pair():
     ).decode("utf-8")
 
     return private_pem, public_pem
+
+
+def generate_certificate(username: str, private_key_pem: str) -> str:
+    """
+    Generate a self-signed X.509 certificate for a user.
+
+    Args:
+        username: The name of the certificate holder
+        private_key_pem: PEM-encoded RSA private key
+
+    Returns:
+        str: PEM-encoded X.509 certificate
+    """
+    private_key = serialization.load_pem_private_key(
+        private_key_pem.encode("utf-8"),
+        password=None,
+    )
+    public_key = private_key.public_key()
+
+    subject = issuer = x509.Name([
+        x509.NameAttribute(NameOID.COMMON_NAME, username),
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "DocDrop Educational"),
+        x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
+    ])
+
+    cert = x509.CertificateBuilder().subject_name(
+        subject
+    ).issuer_name(
+        issuer
+    ).public_key(
+        public_key
+    ).serial_number(
+        x509.random_serial_number()
+    ).not_valid_before(
+        datetime.now(timezone.utc)
+    ).not_valid_after(
+        datetime.now(timezone.utc) + timedelta(days=365)
+    ).add_extension(
+        x509.SubjectAlternativeName([x509.DNSName(username)]),
+        critical=False,
+    ).sign(private_key, hashes.SHA256())
+
+    return cert.public_bytes(serialization.Encoding.PEM).decode("utf-8")
 
 
 def hash_content(text: str) -> str:
@@ -95,9 +141,15 @@ def verify_signature(hash_hex: str, signature_b64: str, public_key_pem: str) -> 
         bool: True if signature is valid, False otherwise
     """
     try:
-        public_key = serialization.load_pem_public_key(
-            public_key_pem.encode("utf-8"),
-        )
+        if "BEGIN CERTIFICATE" in public_key_pem:
+            # It's a certificate, extract the public key
+            cert = x509.load_pem_x509_certificate(public_key_pem.encode("utf-8"))
+            public_key = cert.public_key()
+        else:
+            # It's a raw public key
+            public_key = serialization.load_pem_public_key(
+                public_key_pem.encode("utf-8"),
+            )
 
         signature = base64.b64decode(signature_b64)
 

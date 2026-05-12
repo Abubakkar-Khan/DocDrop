@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 from models import db, User
-from services.crypto_engine import generate_key_pair
+from services.crypto_engine import generate_key_pair, generate_certificate
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
@@ -33,10 +33,14 @@ def register():
     # Generate RSA-2048 keypair
     private_pem, public_pem = generate_key_pair()
 
+    # Generate self-signed certificate
+    certificate_pem = generate_certificate(username, private_pem)
+
     # Create user
     user = User(
         username=username,
         public_key=public_pem,
+        certificate=certificate_pem,
         private_key=private_pem,
     )
     user.set_password(password)
