@@ -69,29 +69,26 @@ graph TB
    ```
 3. Access the application at: `http://localhost:5000`
 
-### **Terminal User Interface (TUI)**
-If you prefer a terminal-based experience:
-1. Install dependencies: `pip install textual`
-2. Run the TUI: `python tui.py`
-3. Navigation: Use `Tab` to switch fields, `Enter` to submit, and `q` to quit.
-
 ---
 
 ## Project Structure
 
 ```text
 DocDrop/
-├── app.py              # Web application (Flask)
-├── tui.py              # Terminal User Interface (Textual)
-├── logic.py            # Shared cryptographic & database logic
-├── templates/          # HTML templates
-├── static/             # CSS/JS assets
-├── uploads/            # Document storage
-└── database.db         # SQLite database
+├── backend/
+│   ├── app.py              # Application entry point & UI routes
+│   ├── models/             # Relational data models
+│   ├── routes/             # API controller logic
+│   ├── services/           # Cryptographic and file services
+│   ├── static/             # Static assets (JS/CSS)
+│   ├── templates/          # HTML templates (Bootstrap 5)
+│   └── uploads/            # Encrypted document storage
+└── README.md               # System documentation
 ```
 
 ---
 
 ## Security Considerations
+The current implementation utilizes standard cryptographic libraries. For high-security environments, it is recommended to integrate Hardware Security Modules (HSMs) for private key management and move to a containerized deployment (Docker/Kubernetes).
 
 
