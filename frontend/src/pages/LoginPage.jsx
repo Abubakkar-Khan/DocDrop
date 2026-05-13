@@ -35,7 +35,8 @@ export default function LoginPage() {
       }
       setTimeout(() => navigate("/dashboard/upload"), 500);
     } catch (err) {
-      setError(err.response?.data?.error || "Authentication failed");
+      console.error("Auth Error:", err);
+      setError(err.response?.data?.error || err.message || "Connection to secure node lost. Check backend.");
     } finally {
       setLoading(false);
     }
@@ -51,8 +52,16 @@ export default function LoginPage() {
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
-        animate={error ? { x: [-5, 5, -5, 5, 0] } : { opacity: 1, y: 0 }}
-        transition={error ? { duration: 0.4 } : { duration: 0.5 }}
+        animate={{ 
+          opacity: 1, 
+          y: 0,
+          x: error ? [-5, 5, -5, 5, 0] : 0 
+        }}
+        transition={{ 
+          opacity: { duration: 0.5 },
+          y: { duration: 0.5 },
+          x: { duration: 0.4 }
+        }}
         className="w-full max-w-xl"
       >
         <RoughBox className="bg-white" options={{ roughness: 1.5 }}>
