@@ -4,8 +4,8 @@ Crypto Engine — RSA-2048 + SHA-256 Digital Signature Operations
 This module provides the core cryptographic functions:
   1. Key generation (RSA-2048)
   2. Hashing (SHA-256)
-  3. Signing (RSA-PSS)
-  4. Verification (RSA-PSS)
+  3. Signing (RSA-PKCS1v1.5)
+  4. Verification (RSA-PKCS1v1.5)
 """
 import base64
 import hashlib
@@ -56,7 +56,7 @@ def hash_content(text: str) -> str:
 
 def sign_hash(hash_hex: str, private_key_pem: str) -> str:
     """
-    Sign a hash using RSA-PSS with the sender's private key.
+    Sign a hash using RSA-PKCS1v1.5 with the sender's private key.
 
     Args:
         hash_hex: The SHA-256 hex digest to sign
@@ -72,10 +72,7 @@ def sign_hash(hash_hex: str, private_key_pem: str) -> str:
 
     signature = private_key.sign(
         hash_hex.encode("utf-8"),
-        padding.PSS(
-            mgf=padding.MGF1(hashes.SHA256()),
-            salt_length=padding.PSS.MAX_LENGTH,
-        ),
+        padding.PKCS1v15(),
         hashes.SHA256(),
     )
 
@@ -84,7 +81,7 @@ def sign_hash(hash_hex: str, private_key_pem: str) -> str:
 
 def verify_signature(hash_hex: str, signature_b64: str, public_key_pem: str) -> bool:
     """
-    Verify an RSA-PSS signature against a hash using the sender's public key.
+    Verify an RSA-PKCS1v1.5 signature against a hash using the sender's public key.
 
     Args:
         hash_hex: The SHA-256 hex digest to verify against
@@ -104,10 +101,7 @@ def verify_signature(hash_hex: str, signature_b64: str, public_key_pem: str) -> 
         public_key.verify(
             signature,
             hash_hex.encode("utf-8"),
-            padding.PSS(
-                mgf=padding.MGF1(hashes.SHA256()),
-                salt_length=padding.PSS.MAX_LENGTH,
-            ),
+            padding.PKCS1v15(),
             hashes.SHA256(),
         )
         return True

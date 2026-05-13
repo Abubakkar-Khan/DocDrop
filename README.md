@@ -17,7 +17,7 @@ DocDrop blends a professional cryptographic tool with a playful, hand-drawn sket
 
 ### Backend (Secure Node)
 - **Framework**: Flask (Python) with SQLAlchemy ORM.
-- **Cryptography**: `cryptography` library implementing **RSA-PSS** padding and **SHA-256** hashing.
+- **Cryptography**: `cryptography` library implementing **RSA-PKCS1v1.5** padding and **SHA-256** hashing.
 - **Authentication**: Stateless JWT (JSON Web Tokens) with secure session restoration.
 - **Database**: SQLite (Relational).
 
@@ -37,7 +37,7 @@ Upon registration, the system generates a 2048-bit RSA keypair for the user. The
 
 ### 2. Document Signing (RSA-PSS)
 1. **Hashing**: The system generates a **SHA-256** digest of the document content.
-2. **Signing**: The digest is signed using the sender's **Private Key** with **PSS (Probabilistic Signature Scheme)** padding, ensuring maximum security.
+2. **Signing**: The digest is signed using the sender's **Private Key** with **PKCS1v1.5** padding, ensuring compatibility and deterministic verification.
 3. **Packaging**: The signature is attached to the document metadata and sent to the receiver.
 
 ### 3. Verification & Integrity Check

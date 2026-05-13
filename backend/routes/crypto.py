@@ -42,8 +42,10 @@ def verify_document(doc_id):
     hashes_match = recomputed_hash == doc.hash_value
 
     # Step 3: Verify RSA signature (authenticity)
+    # We verify the signature AGAINST THE RECOMPUTED HASH to ensure 
+    # the signature is valid for the current content of the file.
     signature_valid = verify_signature(
-        doc.hash_value, doc.signature, sender.public_key
+        recomputed_hash, doc.signature, sender.public_key
     )
 
     # Determine overall result
@@ -70,7 +72,7 @@ def verify_document(doc_id):
             "sender_username": sender.username,
             "sender_public_key": sender.public_key,
             "signature": doc.signature,
-            "signature_algorithm": "RSA-PSS (2048-bit)",
+            "signature_algorithm": "RSA-PKCS1v1.5 (2048-bit)",
 
             # Step 3: Transmission info
             "original_filename": doc.original_filename,

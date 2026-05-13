@@ -85,7 +85,7 @@ def sign_document():
     # Step 1: Hash the content
     doc.hash_value = hash_content(doc.text_content)
 
-    # Step 2: Sign the hash with sender's private key
+    # Step 2: Sign the hash with sender's private key (PKCS1v1.5)
     doc.signature = sign_hash(doc.hash_value, user.private_key)
 
     # Update status
@@ -99,7 +99,7 @@ def sign_document():
             "original_text_preview": doc.text_content[:200] + ("..." if len(doc.text_content) > 200 else ""),
             "hash_algorithm": "SHA-256",
             "hash_value": doc.hash_value,
-            "signature_algorithm": "RSA-PSS (2048-bit)",
+            "signature_algorithm": "RSA-PKCS1v1.5 (2048-bit)",
             "signature_preview": doc.signature[:80] + "...",
             "private_key_used": user.private_key[:40] + "...[MASKED]",
         },
