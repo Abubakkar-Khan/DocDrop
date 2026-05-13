@@ -1,118 +1,107 @@
-# DocDrop: Secure Document Signing & Verification
+# DocDrop: High-Doodly Secure Digital Signatures
 
-DocDrop is a full-stack platform for authenticating and verifying the integrity of Word documents using industry-standard cryptographic primitives. The system implements a robust digital signature lifecycle utilizing RSA-2048 for asymmetric encryption and SHA-256 for secure message hashing.
+DocDrop is a stylized, full-stack platform for authenticating and verifying the integrity of documents using industry-standard cryptographic primitives. It features a unique "Doodly" sketchbook aesthetic while maintaining enterprise-grade security using RSA-2048 for asymmetric encryption and SHA-256 for secure message hashing.
 
 ---
 
-## Technical Overview
+## 🎨 Visual Identity: The Doodly Style
+DocDrop blends a professional cryptographic tool with a playful, hand-drawn sketchbook aesthetic.
+- **Notebook Design System**: Custom ruled-paper backgrounds and margin lines.
+- **Hand-Drawn UI**: Borders, buttons, and icons rendered with `Rough.js` for a sketchy, organic feel.
+- **Dynamic Parallax**: Background doodles that move subtly as you interact with the dashboard.
+- **Custom Typography**: Using curated handwriting fonts (Architects Daughter, Gochi Hand, Patrick Hand).
 
-The application is architected with a decoupled frontend and backend to ensure scalability and maintainability.
+---
 
-### Key Technologies
-- **Backend**: Flask (Python) with SQLAlchemy ORM.
-- **Frontend**: React 18 with TailwindCSS v4.
-- **Cryptography**: Python `cryptography` library (RSA-PSS, SHA-256).
-- **Authentication**: Stateless JWT (JSON Web Tokens).
+## 🛠️ Technical Stack
+
+### Backend (Secure Node)
+- **Framework**: Flask (Python) with SQLAlchemy ORM.
+- **Cryptography**: `cryptography` library implementing **RSA-PSS** padding and **SHA-256** hashing.
+- **Authentication**: Stateless JWT (JSON Web Tokens) with secure session restoration.
 - **Database**: SQLite (Relational).
 
----
-
-## System Architecture
-
-```mermaid
-graph TB
-    subgraph Client ["Client Interface (React)"]
-        A[Authentication] --> B[Document Management]
-        B --> C[Signing Interface]
-        B --> D[Verification Engine]
-    end
-
-    subgraph Server ["Application Server (Flask)"]
-        API[RESTful API] --> JWT[JWT Validation]
-        API --> Crypto[Cryptographic Service]
-        API --> Storage[FileSystem Service]
-        JWT --> DB[(Persistence Layer)]
-    end
-
-    Client -->|RESTful API| Server
-```
-
-### Cryptographic Implementation
-The system strictly adheres to modern cryptographic standards:
-- **Hashing**: SHA-256 is used to generate immutable document digests.
-- **Signature Padding**: RSA-PSS (Probabilistic Signature Scheme) is employed to provide high security and resistance against chosen-ciphertext attacks.
-- **Key Storage**: 2048-bit RSA keys are generated per-user upon registration.
+### Frontend (User Interface)
+- **Framework**: React 19 (Vite)
+- **Styling**: TailwindCSS v4 + Vanilla CSS Design Tokens.
+- **Animations**: Framer Motion (Parallax, micro-interactions, layout transitions).
+- **Sketchy Rendering**: Rough.js (Canvas-based hand-drawn aesthetics).
+- **Icons**: Custom DoodleIcon library powered by Rough.js.
 
 ---
 
-## Cryptographic Workflow
+## 🔐 Cryptographic Workflow
 
-### Document Signing
-1. **Extraction**: Raw text is parsed from the uploaded OpenXML (.docx) file.
-2. **Hashing**: A SHA-256 digest is generated from the document payload.
-3. **Encryption**: The digest is signed using the sender's private RSA key with PSS padding.
-4. **Distribution**: The signed document package is made available to the intended recipient.
+### 1. Registration & Key Generation
+Upon registration, the system generates a 2048-bit RSA keypair for the user. The public key is stored for verification by others, while the private key is used to sign documents.
 
-### Verification Logic
-1. **Digest Generation**: The recipient's system re-hashes the document content using SHA-256.
-2. **Signature Decryption**: The transmitted signature is decrypted using the sender's public key.
-3. **Integrity Validation**: The re-computed hash is compared against the decrypted signature hash. A mismatch indicates data tampering or unauthorized modification.
+### 2. Document Signing (RSA-PSS)
+1. **Hashing**: The system generates a **SHA-256** digest of the document content.
+2. **Signing**: The digest is signed using the sender's **Private Key** with **PSS (Probabilistic Signature Scheme)** padding, ensuring maximum security.
+3. **Packaging**: The signature is attached to the document metadata and sent to the receiver.
+
+### 3. Verification & Integrity Check
+1. **Re-Hashing**: The receiver generates a new SHA-256 digest from the received document.
+2. **Decryption**: The original signature is decrypted using the sender's **Public Key**.
+3. **Comparison**: If the hashes match, the document is verified as authentic and untampered.
 
 ---
 
-## Installation and Deployment
+## 🚀 Installation and Deployment
+
+### Prerequisites
+- Python 3.10+
+- Node.js 18+
+- npm or yarn
 
 ### Backend Setup
-1. Initialize the Python environment:
+1. **Install dependencies**:
    ```bash
    cd backend
    pip install -r requirements.txt
    ```
-2. Launch the application server:
+2. **Run the API server**:
    ```bash
    python app.py
    ```
+   *The server will start on `http://localhost:5000`*
 
 ### Frontend Setup
-1. Install dependencies:
+1. **Install dependencies**:
    ```bash
    cd frontend
    npm install
    ```
-2. Start the development server:
+2. **Start the development server**:
    ```bash
    npm run dev
    ```
+   *The app will be available on `http://localhost:5173` (or `5174` if 5173 is busy)*
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
 ```text
 DocDrop/
 ├── backend/
-│   ├── app.py              # Application entry point
-│   ├── models/             # Relational data models
-│   ├── routes/             # API controller logic
-│   ├── services/           # Cryptographic and file services
-│   └── uploads/            # Encrypted document storage
+│   ├── app.py              # Flask Application Factory
+│   ├── config.py           # Environment & App Config
+│   ├── models/             # Database Schemas (User, Document)
+│   ├── routes/             # API Blueprints (Auth, Docs, Crypto)
+│   ├── services/           # Logic (Crypto Engine, File Handling)
+│   └── instance/           # Local SQLite Database
 ├── frontend/
 │   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── pages/          # View controllers
-│   │   ├── context/        # State management
-│   │   └── api/            # HTTP client configuration
-│   └── index.html          # Main entry point
-└── README.md               # System documentation
+│   │   ├── components/     # Rough.js Wrappers & Sidebar
+│   │   ├── pages/          # View Layers (Login, Upload, Inbox)
+│   │   ├── context/        # Auth & Global State
+│   │   └── api/            # Axios Client & Interceptors
+│   └── index.css           # Doodly Design Tokens
+└── README.md               # You are here
 ```
 
 ---
 
-## Security Considerations
-The current implementation utilizes standard cryptographic libraries. For high-security environments, it is recommended to integrate Hardware Security Modules (HSMs) for private key management and move to a containerized deployment (Docker/Kubernetes).
-
-<<<<<<< HEAD
-=======
-
-
->>>>>>> de179d4d9d0f5120e844d83c1093822fefac537b
+## 🔒 Security Considerations
+DocDrop is designed as an educational and demonstration platform for cryptographic principles. In a production environment, private keys should be managed via Hardware Security Modules (HSMs) or Secure Enclaves, and the system should be deployed using HTTPS with strict CORS policies.
