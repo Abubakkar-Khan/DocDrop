@@ -1,6 +1,7 @@
 /**
  * DashboardPage — Production Doodly version (Final)
  */
+import { useState } from "react";
 import { Outlet, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Sidebar from "../components/Sidebar";
@@ -10,6 +11,7 @@ import DoodleIcon from "../components/Rough/DoodleIcon";
 export default function DashboardPage() {
   const { isAuthenticated, loading } = useAuth();
   const { scrollY } = useScroll();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Parallax transforms for background doodles
   const y1 = useTransform(scrollY, [0, 1000], [0, -200]);
@@ -33,7 +35,21 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex h-screen bg-surface overflow-hidden relative">
+    <div className="flex h-screen bg-surface overflow-hidden relative flex-col md:flex-row">
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-primary/10 z-50">
+        <div className="flex items-center gap-2">
+          <DoodleIcon name="shield" size={24} color="#0052FF" />
+          <h1 className="text-2xl font-doodle">DocDrop</h1>
+        </div>
+        <button 
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 border-2 border-primary rounded-lg active:scale-95 transition-transform"
+        >
+          <DoodleIcon name={isMobileMenuOpen ? "close" : "menu"} size={24} />
+        </button>
+      </div>
+
       {/* Parallax Background Icons */}
       <div className="absolute inset-0 pointer-events-none opacity-10 z-0 overflow-hidden">
         <motion.div style={{ y: y1, rotate }} className="absolute top-[-5%] left-[5%]">
@@ -50,10 +66,22 @@ export default function DashboardPage() {
         </motion.div>
       </div>
 
-      <Sidebar />
+      {/* Sidebar - Desktop & Mobile Overlay */}
+      <div className={`
+        fixed inset-0 z-40 md:relative md:flex transition-transform duration-300
+        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+      `}>
+        <div 
+          className="absolute inset-0 bg-primary/20 backdrop-blur-sm md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+        <div className="relative w-80 max-w-[85vw] h-full">
+          <Sidebar onNavClick={() => setIsMobileMenuOpen(false)} />
+        </div>
+      </div>
       
-      <main className="flex-1 overflow-y-auto relative z-10 scrollbar-thin">
-        <div className="max-w-6xl mx-auto p-12 lg:p-20">
+      <main className="flex-1 overflow-y-auto relative z-10 scrollbar-thin p-4 md:p-12 lg:p-20">
+        <div className="max-w-6xl mx-auto">
           <Outlet />
         </div>
       </main>

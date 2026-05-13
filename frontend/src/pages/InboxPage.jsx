@@ -94,17 +94,17 @@ export default function InboxPage() {
       <div className="flex flex-col min-h-full">
         <header className="border-b-2 border-dashed border-primary/10 pb-8 mb-12">
           <div className="flex justify-between items-end">
-            <h1 className="text-6xl font-hand tracking-tight leading-none">
+            <h1 className="text-4xl md:text-6xl font-hand tracking-tight leading-none">
               Verify Document
             </h1>
             <button onClick={goBack} className="btn-doodle text-sm opacity-50 hover:opacity-100 flex items-center gap-1">
-              <DoodleIcon name="logout" size={16} className="rotate-180" /> Return to List
+              <DoodleIcon name="logout" size={16} className="rotate-180" /> <span className="hidden md:inline">Return to List</span>
             </button>
           </div>
         </header>
 
-        <div className="grid grid-cols-12 gap-12">
-          <div className="col-span-5 space-y-8">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-12">
+          <div className="lg:col-span-5 space-y-8">
             <RoughBox className="bg-white" options={{ roughness: 1 }}>
                <div className="flex justify-between items-start mb-8">
                 <div>
@@ -132,7 +132,7 @@ export default function InboxPage() {
             </RoughBox>
           </div>
 
-          <div className="col-span-7">
+          <div className="lg:col-span-7">
             {!verificationResult && (
               <RoughBox className="h-full bg-white flex flex-col items-center justify-center p-12 text-center" options={{ roughness: 1.5 }}>
                 <DoodleIcon name="file" size={120} color="#222222" className={`mb-8 ${verifying ? "animate-pulse text-accent" : "opacity-10"}`} />
@@ -148,7 +148,7 @@ export default function InboxPage() {
             {verificationResult && (
               <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-12">
                 <RoughBox 
-                  className="p-12 text-center" 
+                  className="p-6 md:p-12 text-center" 
                   options={{ 
                     roughness: 1.5, 
                     fill: verificationResult.result === "verified" ? "#F0FFF4" : "#FFF5F5",
@@ -156,10 +156,10 @@ export default function InboxPage() {
                   }}
                 >
                   {verificationResult.result === "verified" 
-                    ? <DoodleIcon name="shield" size={120} color="#22AA22" className="mx-auto mb-8" />
-                    : <DoodleIcon name="zap" size={120} color="#FF3300" className="mx-auto mb-8" />
+                    ? <DoodleIcon name="shield" size={80} mdSize={120} color="#22AA22" className="mx-auto mb-8" />
+                    : <DoodleIcon name="zap" size={80} mdSize={120} color="#FF3300" className="mx-auto mb-8" />
                   }
-                  <h2 className={`text-5xl font-hand ${verificationResult.result === "verified" ? "text-success" : "text-error"}`}>
+                  <h2 className={`text-3xl md:text-5xl font-hand ${verificationResult.result === "verified" ? "text-success" : "text-error"}`}>
                     {verificationResult.result === "verified" ? "Verification Success" : "Integrity Breach"}
                   </h2>
                   <p className="text-[10px] uppercase font-bold opacity-30 mt-4 tracking-[0.2em]">
@@ -208,8 +208,8 @@ export default function InboxPage() {
 
   return (
     <div className="flex flex-col min-h-full">
-      <header className="border-b-2 border-dashed border-primary/10 pb-8 mb-12">
-        <h1 className="text-6xl font-hand tracking-tight leading-none">
+      <header className="border-b-2 border-dashed border-primary/10 pb-4 md:pb-8 mb-8 md:mb-12">
+        <h1 className="text-4xl md:text-6xl font-hand tracking-tight leading-none">
           Inbox
         </h1>
         <p className="text-[10px] uppercase tracking-widest opacity-40 font-bold mt-2">Received Documents Queue</p>

@@ -12,7 +12,7 @@ const navItems = [
   { to: "/dashboard/sent", icon: "send", label: "Sent Documents" },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onNavClick }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -22,7 +22,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-80 h-screen bg-transparent flex flex-col shrink-0 p-8 relative z-20">
+    <aside className="w-full md:w-80 h-full flex flex-col shrink-0 p-4 md:p-8 relative z-20">
       <RoughBox className="h-full bg-white flex flex-col" options={{ roughness: 1.5, bowing: 2 }}>
         {/* Logo */}
         <div className="mb-12 text-center">
@@ -39,6 +39,7 @@ export default function Sidebar() {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={() => onNavClick?.()}
               className={({ isActive }) =>
                 `flex items-center gap-4 py-3 px-4 transition-all rounded-lg ${
                   isActive 

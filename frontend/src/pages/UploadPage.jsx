@@ -101,7 +101,7 @@ export default function UploadPage() {
       <header className="border-b-2 border-dashed border-primary/10 pb-8 mb-12">
         <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-6xl font-hand tracking-tight leading-none mb-2">
+            <h1 className="text-4xl md:text-6xl font-hand tracking-tight leading-none mb-2">
               {step === "upload" && "Upload Document"}
               {step === "preview" && "Preview Content"}
               {step === "signed" && "Review Signature"}
@@ -127,8 +127,8 @@ export default function UploadPage() {
         </motion.div>
       )}
 
-      <div className="grid grid-cols-12 gap-12 flex-1">
-        <div className="col-span-8">
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-12 flex-1">
+        <div className="lg:col-span-8">
           <AnimatePresence mode="wait">
             {step === "upload" && (
               <motion.div
@@ -142,7 +142,7 @@ export default function UploadPage() {
                   onClick={() => fileInputRef.current?.click()}
                   className="h-full cursor-pointer group"
                 >
-                  <RoughBox className="h-full bg-white flex flex-col items-center justify-center p-20 hover:bg-surface-dim transition-colors" options={{ roughness: 1.5 }}>
+                  <RoughBox className="h-full bg-white flex flex-col items-center justify-center p-8 md:p-20 hover:bg-surface-dim transition-colors" options={{ roughness: 1.5 }}>
                     <input ref={fileInputRef} type="file" accept=".docx" onChange={handleFileSelect} className="hidden" />
                     <DoodleIcon name="upload" size={120} color="#222222" className="mb-6 opacity-20 group-hover:opacity-100 group-hover:scale-110 transition-all" />
                     <h2 className="text-3xl font-hand">Select Document to Sign</h2>
@@ -188,10 +188,10 @@ export default function UploadPage() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-[100] bg-surface/40 backdrop-blur-md flex flex-col items-center justify-center p-20"
+                      className="fixed inset-0 z-[100] bg-surface/40 backdrop-blur-md flex flex-col items-center justify-center p-4 md:p-20"
                     >
-                      <RoughBox className="bg-white p-12 text-center w-full max-w-2xl shadow-2xl" options={{ roughness: 2.5, strokeWidth: 3 }}>
-                        <h2 className="text-4xl font-hand mb-8">Executing RSA-2048 Protocol</h2>
+                      <RoughBox className="bg-white p-6 md:p-12 text-center w-full max-w-2xl shadow-2xl" options={{ roughness: 2.5, strokeWidth: 3 }}>
+                        <h2 className="text-3xl md:text-4xl font-hand mb-8">Executing RSA-2048 Protocol</h2>
                         <div className="space-y-10">
                           <div className="space-y-2">
                             <div className="flex justify-between text-[10px] uppercase font-bold opacity-40">
@@ -269,9 +269,9 @@ export default function UploadPage() {
 
             {step === "done" && (
               <motion.div key="done" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="h-full">
-                <RoughBox className="h-full bg-white flex flex-col items-center justify-center text-center p-20" options={{ roughness: 2, fill: "#F0F9FF" }}>
-                  <DoodleIcon name="check" size={150} color="#0066FF" className="mb-8" />
-                  <h2 className="text-6xl font-hand mb-6">Process Complete</h2>
+                <RoughBox className="h-full bg-white flex flex-col items-center justify-center text-center p-12 md:p-20" options={{ roughness: 2, fill: "#F0F9FF" }}>
+                  <DoodleIcon name="check" size={100} mdSize={150} color="#0066FF" className="mb-8" />
+                  <h2 className="text-4xl md:text-6xl font-hand mb-6">Process Complete</h2>
                   <p className="text-[10px] uppercase font-bold opacity-30 tracking-[0.3em]">Document Hash: {document.hash?.slice(0, 32)}...</p>
                   
                   <RoughButton onClick={reset} className="mt-16 px-12 h-20" color="#FAFAFA">
@@ -284,7 +284,7 @@ export default function UploadPage() {
         </div>
 
         {/* Sidebar Context */}
-        <div className="col-span-4 space-y-12">
+        <div className="lg:col-span-4 space-y-12">
           <RoughBox className="bg-surface-dim" options={{ roughness: 1.2 }}>
             <h3 className="text-[10px] uppercase font-bold opacity-30 mb-6 tracking-widest">System Guidelines</h3>
             <p className="font-hand text-xl leading-relaxed opacity-60">
