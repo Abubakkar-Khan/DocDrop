@@ -17,8 +17,14 @@ export function AuthProvider({ children }) {
     const savedUser = localStorage.getItem("edusign_user");
 
     if (savedToken && savedUser) {
-      setToken(savedToken);
-      setUser(JSON.parse(savedUser));
+      try {
+        setToken(savedToken);
+        setUser(JSON.parse(savedUser));
+      } catch (err) {
+        console.error("Failed to parse saved user:", err);
+        localStorage.removeItem("edusign_token");
+        localStorage.removeItem("edusign_user");
+      }
     }
     setLoading(false);
   }, []);

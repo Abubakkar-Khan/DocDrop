@@ -1,17 +1,13 @@
 /**
- * LoginPage — Authentication with Swiss minimalist design
+ * LoginPage — High-Doodly Production version
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  HiOutlineShieldCheck,
-  HiOutlineKey,
-  HiOutlineUser,
-  HiOutlineLockClosed,
-  HiOutlineFingerPrint,
-} from "react-icons/hi2";
+import { RoughBox, RoughButton } from "../components/Rough/RoughComponents";
+import RoughWrapper from "../components/Rough/RoughWrapper";
+import DoodleIcon from "../components/Rough/DoodleIcon";
 
 export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
@@ -33,215 +29,130 @@ export default function LoginPage() {
     try {
       if (isRegister) {
         await register(username, password);
-        setSuccess("Account created! RSA-2048 keypair generated.");
+        setSuccess("Account created. RSA keypair generated.");
       } else {
         await login(username, password);
       }
-      setTimeout(() => navigate("/dashboard/upload"), 300);
+      setTimeout(() => navigate("/dashboard/upload"), 500);
     } catch (err) {
-      setError(
-        err.response?.data?.error || "Something went wrong. Please try again."
-      );
+      setError(err.response?.data?.error || "Authentication failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface p-4">
-      {/* Background pattern */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/3 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
+    <div className="min-h-screen flex items-center justify-center bg-surface p-8 relative overflow-hidden">
+      {/* Background Doodles */}
+      <div className="parallax-bg inset-0 opacity-10">
+        <DoodleIcon name="shield" size={300} className="absolute top-20 left-20 -rotate-12" />
+        <DoodleIcon name="lock" size={300} className="absolute bottom-20 right-20 rotate-12" />
       </div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative"
+        animate={error ? { x: [-5, 5, -5, 5, 0] } : { opacity: 1, y: 0 }}
+        transition={error ? { duration: 0.4 } : { duration: 0.5 }}
+        className="w-full max-w-xl"
       >
-        {/* Logo & Branding */}
-        <div className="text-center mb-8">
-          <motion.div
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary mb-4 shadow-lg shadow-primary/20"
-          >
-            <HiOutlineShieldCheck className="w-8 h-8 text-white" />
-          </motion.div>
-          <h1 className="text-3xl font-bold text-text tracking-tight">
-            DocDrop
-          </h1>
-          <p className="text-text-muted mt-1 text-sm">
-            Secure Document Signing & Verification
-          </p>
-        </div>
+        <RoughBox className="bg-white" options={{ roughness: 1.5 }}>
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-24 h-24 bg-accent/5 rounded-full mb-6">
+              <DoodleIcon name="shield" size={60} color="#0066FF" />
+            </div>
+            <h1 className="text-5xl font-doodle mb-2">DocDrop</h1>
+            <p className="text-xs uppercase tracking-[0.3em] opacity-40 font-sans font-bold">
+              Secure Digital Signatures
+            </p>
+          </div>
 
-        {/* Auth Card */}
-        <div className="card p-8">
-          {/* Tab Toggle */}
-          <div className="flex bg-surface-alt rounded-lg p-1 mb-6">
+          <div className="flex mb-12 border-b border-dashed border-primary/10">
             <button
-              type="button"
-              onClick={() => {
-                setIsRegister(false);
-                setError("");
-                setSuccess("");
-              }}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
-                !isRegister
-                  ? "bg-surface-card text-text shadow-sm"
-                  : "text-text-muted hover:text-text"
-              }`}
+              onClick={() => setIsRegister(false)}
+              className={`flex-1 py-4 font-hand text-2xl transition-all ${!isRegister ? "text-accent border-b-4 border-accent" : "opacity-30 hover:opacity-100"}`}
             >
               Sign In
             </button>
             <button
-              type="button"
-              onClick={() => {
-                setIsRegister(true);
-                setError("");
-                setSuccess("");
-              }}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
-                isRegister
-                  ? "bg-surface-card text-text shadow-sm"
-                  : "text-text-muted hover:text-text"
-              }`}
+              onClick={() => setIsRegister(true)}
+              className={`flex-1 py-4 font-hand text-2xl transition-all ${isRegister ? "text-accent border-b-4 border-accent" : "opacity-30 hover:opacity-100"}`}
             >
               Register
             </button>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium text-text-muted uppercase tracking-wider mb-1.5">
-                Username
-              </label>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="space-y-2">
+              <label className="text-xs uppercase font-bold opacity-50 ml-1">Username</label>
               <div className="relative">
-                <HiOutlineUser className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-light" />
-                <input
-                  id="username-input"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter username"
-                  required
-                  minLength={3}
-                  className="input-field pl-10"
-                  autoFocus
-                />
+                <RoughWrapper options={{ roughness: 0.8 }}>
+                  <div className="flex items-center">
+                    <DoodleIcon name="user" size={24} className="ml-4 opacity-30" />
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Enter your username"
+                      required
+                      className="w-full h-16 bg-transparent px-4 font-hand text-2xl outline-none placeholder:opacity-20"
+                    />
+                  </div>
+                </RoughWrapper>
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-text-muted uppercase tracking-wider mb-1.5">
-                Password
-              </label>
+            <div className="space-y-2">
+              <label className="text-xs uppercase font-bold opacity-50 ml-1">Password</label>
               <div className="relative">
-                <HiOutlineLockClosed className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-light" />
-                <input
-                  id="password-input"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter password"
-                  required
-                  minLength={4}
-                  className="input-field pl-10"
-                />
+                <RoughWrapper options={{ roughness: 0.8 }}>
+                  <div className="flex items-center">
+                    <DoodleIcon name="lock" size={24} className="ml-4 opacity-30" />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      required
+                      className="w-full h-16 bg-transparent px-4 font-hand text-2xl outline-none placeholder:opacity-20"
+                    />
+                  </div>
+                </RoughWrapper>
               </div>
             </div>
 
             <AnimatePresence>
-              {error && (
+              {(error || success) && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="bg-error-50 text-error text-sm px-4 py-2.5 rounded-lg border border-error/10"
+                  className={`font-hand text-xl text-center px-4 py-2 border border-dashed rounded ${error ? "text-error bg-error/5 border-error/20" : "text-success bg-success/5 border-success/20"}`}
                 >
-                  {error}
-                </motion.div>
-              )}
-              {success && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="bg-success-50 text-success text-sm px-4 py-2.5 rounded-lg border border-success/10"
-                >
-                  <div className="flex items-center gap-2">
-                    <HiOutlineKey className="w-4 h-4" />
-                    {success}
-                  </div>
+                  {error || success}
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <button
-              id="auth-submit-btn"
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full py-3"
+            <RoughButton
+              onClick={handleSubmit}
+              className="w-full h-20"
+              color={isRegister ? "#F0F9FF" : "#FAFAFA"}
             >
-              {loading ? (
-                <span className="inline-flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4 animate-spin"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      className="opacity-25"
-                    />
-                    <path
-                      d="M4 12a8 8 0 018-8"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      className="opacity-75"
-                    />
-                  </svg>
-                  {isRegister ? "Generating RSA Keys..." : "Authenticating..."}
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-2">
-                  <HiOutlineFingerPrint className="w-4 h-4" />
-                  {isRegister ? "Create Account" : "Sign In"}
-                </span>
-              )}
-            </button>
+              <div className="flex items-center justify-center gap-3">
+                {loading ? (
+                  <div className="w-6 h-6 border-2 border-t-transparent border-primary rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <DoodleIcon name="check" size={24} />
+                    <span>{isRegister ? "Create Account" : "Access System"}</span>
+                  </>
+                )}
+              </div>
+            </RoughButton>
           </form>
-
-          {/* Info Note for Register */}
-          {isRegister && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mt-4 flex items-start gap-2 text-xs text-text-muted bg-primary-50 px-3 py-2.5 rounded-lg"
-            >
-              <HiOutlineKey className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-              <span>
-                Upon registration, an <strong>RSA-2048 keypair</strong> will be
-                automatically generated for you. Your public key will be shared
-                with the system for signature verification.
-              </span>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <p className="text-center text-xs text-text-light mt-6">
-          Educational Digital Signature System · RSA-2048 + SHA-256
+        </RoughBox>
+        
+        <p className="text-center text-[10px] uppercase tracking-widest opacity-30 mt-12 font-sans font-bold">
+          RSA-2048 Asymmetric Cryptography · SHA-256 Hashing
         </p>
       </motion.div>
     </div>
