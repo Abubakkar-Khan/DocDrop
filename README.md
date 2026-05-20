@@ -74,6 +74,135 @@ Upon registration, the system generates a 2048-bit RSA keypair for the user. The
 
 ---
 
+## 📊 System Diagrams
+
+### Sequence Diagram: Document Signing & Verification Flow
+
+```mermaid
+sequenceDiagram
+    actor Sender
+    participant Frontend as Frontend (React)
+    participant Backend as Backend (Flask)
+    participant Crypto as Crypto Engine
+    participant DB as SQLite
+
+    Sender->>Frontend: 1. Upload .docx file
+    Frontend->>Backend: POST /api/documents/upload
+    Backend->>Backend: Extract text from .docx
+    Backend->>Crypto: 2. hash_content(text)
+    Crypto->>Crypto: SHA-256 hashing
+    Crypto-->>Backend: document_hash
+    Backend->>DB: Create Document record
+    DB-->>Backend: doc_id, hash_value
+
+    Sender->>Frontend: 3. Sign document
+    Frontend->>Backend: POST /api/documents/{doc_id}/sign
+    Backend->>Crypto: sign_hash(hash, private_key)
+    Crypto->>Crypto: RSA-2048 signing
+    Crypto-->>Backend: signature_b64
+    Backend->>DB: Update Document (signature)
+    DB-->>Backend: OK
+
+    Sender->>Frontend: 4. Send to receiver
+    Frontend->>Backend: POST /api/documents/{doc_id}/send
+    Backend->>DB: Update receiver_id
+    DB-->>Backend: OK
+
+    actor Receiver
+    Receiver->>Frontend: 5. View inbox
+    Frontend->>Backend: GET /api/documents/inbox
+    Backend->>DB: Query documents
+    DB-->>Backend: Documents list
+
+    Receiver->>Frontend: 6. Verify document
+    Frontend->>Backend: POST /api/crypto/verify/{doc_id}
+    Backend->>Crypto: 7. hash_content(current_text)
+    Crypto-->>Backend: recomputed_hash
+    Backend->>Crypto: verify_signature(hash, sig, pub_key)
+    Crypto->>Crypto: RSA verification
+    Crypto-->>Backend: signature_valid (bool)
+    Backend->>Backend: hashes_match = (original == recomputed)
+    Backend->>DB: Update status = verified/tampered
+    DB-->>Backend: OK
+    Backend-->>Frontend: verification_result
+    Frontend-->>Receiver: Display: Hash status + Authentic/Invalid
+```
+
+### Class Diagram: Data Models & Architecture
+
+```mermaid
+classDiagram
+    class User {
+        +id: str (PK)
+        +username: str (unique)
+        +email: str (unique)
+        +password_hash: str
+        +public_key: str (RSA PEM)
+        +private_key: str (RSA PEM)
+        +created_at: datetime
+        +documents_sent: list[Document]
+        +documents_received: list[Document]
+    }
+
+    class Document {
+        +id: str (PK, uuid)
+        +original_filename: str
+        +sender_id: str (FK to User)
+        +receiver_id: str (FK to User)
+        +text_content: str (extracted from .docx)
+        +hash_value: str (SHA-256 hex)
+        +signature: str (RSA signature, base64)
+        +status: enum (unsigned, signed, sent, verified, tampered)
+        +file_path: str (stored on disk)
+        +created_at: datetime
+        +updated_at: datetime
+        +sender: User
+        +receiver: User
+    }
+
+    class CryptoEngine {
+        +generate_key_pair() tuple~str, str~
+        +hash_content(text: str) str
+        +sign_hash(hash_hex: str, private_key: str) str
+        +verify_signature(hash_hex: str, sig_b64: str, pub_key: str) bool
+    }
+
+    class DocxService {
+        +extract_text(file_path: str) str
+        +validate_docx(filename: str) bool
+    }
+
+    class AuthRoutes {
+        +POST /register
+        +POST /login
+        +GET /me
+    }
+
+    class DocumentRoutes {
+        +POST /upload
+        +POST /{id}/sign
+        +POST /{id}/send
+        +GET /inbox
+        +GET /sent
+        +POST /{id}/tamper
+    }
+
+    class CryptoRoutes {
+        +POST /verify/{id}
+    }
+
+    User "1" -- "*" Document : sends
+    User "1" -- "*" Document : receives
+    DocumentRoutes -- Document : manages
+    DocumentRoutes -- CryptoEngine : uses
+    DocumentRoutes -- DocxService : uses
+    CryptoRoutes -- CryptoEngine : uses
+    CryptoRoutes -- Document : verifies
+    AuthRoutes -- User : manages
+```
+
+---
+
 ## 🎓 Educational Features
 
 DocDrop includes features designed to demonstrate cryptographic concepts in a tangible way:
