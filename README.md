@@ -133,35 +133,31 @@ sequenceDiagram
 ```mermaid
 classDiagram
     class User {
-        +id: str (PK)
-        +username: str (unique)
-        +email: str (unique)
+        +id: str
+        +username: str
+        +email: str
         +password_hash: str
-        +public_key: str (RSA PEM)
-        +private_key: str (RSA PEM)
+        +public_key: str
+        +private_key: str
         +created_at: datetime
-        +documents_sent: list[Document]
-        +documents_received: list[Document]
     }
 
     class Document {
-        +id: str (PK, uuid)
+        +id: str
         +original_filename: str
-        +sender_id: str (FK to User)
-        +receiver_id: str (FK to User)
-        +text_content: str (extracted from .docx)
-        +hash_value: str (SHA-256 hex)
-        +signature: str (RSA signature, base64)
-        +status: enum (unsigned, signed, sent, verified, tampered)
-        +file_path: str (stored on disk)
+        +sender_id: str
+        +receiver_id: str
+        +text_content: str
+        +hash_value: str
+        +signature: str
+        +status: str
+        +file_path: str
         +created_at: datetime
         +updated_at: datetime
-        +sender: User
-        +receiver: User
     }
 
     class CryptoEngine {
-        +generate_key_pair() tuple~str, str~
+        +generate_key_pair() (str, str)
         +hash_content(text: str) str
         +sign_hash(hash_hex: str, private_key: str) str
         +verify_signature(hash_hex: str, sig_b64: str, pub_key: str) bool
