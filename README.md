@@ -17,9 +17,36 @@ DocDrop blends a professional cryptographic tool with a playful, hand-drawn sket
 
 ### Backend (Secure Node)
 - **Framework**: Flask (Python) with SQLAlchemy ORM.
-- **Cryptography**: `cryptography` library implementing **RSA-PKCS1v1.5** padding and **SHA-256** hashing.
+- **Cryptography**: `cryptography` library implementing **RSA-PKCS1v1.5** padding and **RSA key generation / signature verification**.
+- **Hashing**: Python standard library `hashlib` for **SHA-256** document hashing.
+- **Document Reading**: `python-docx` for extracting text from `.docx` files.
 - **Authentication**: Stateless JWT (JSON Web Tokens) with secure session restoration.
 - **Database**: SQLite (Relational).
+
+### Libraries Used
+
+#### Backend Libraries
+- **Flask**: API server and route handling.
+- **flask-sqlalchemy**: ORM layer for users and documents.
+- **flask-jwt-extended**: JWT authentication and route protection.
+- **flask-cors**: Cross-origin request support for the frontend.
+- **cryptography**: RSA key generation, signing, and signature verification.
+- **python-docx**: Reads and extracts text from Word `.docx` documents.
+- **werkzeug**: Flask utility functions used by the backend stack.
+
+#### Python Standard Library Modules
+- **hashlib**: SHA-256 document hashing.
+- **base64**: Encodes and decodes RSA signatures.
+- **os**: File and path handling in the document service.
+
+#### Frontend Libraries
+- **React**: User interface.
+- **react-router-dom**: Page routing.
+- **framer-motion**: Animations and transitions.
+- **roughjs**: Hand-drawn sketch-style rendering.
+- **axios**: API requests.
+- **lucide-react** and **react-icons**: UI icons.
+- **tailwindcss** and **@tailwindcss/vite**: Styling and build integration.
 
 ### Frontend (User Interface)
 - **Framework**: React 19 (Vite)
@@ -35,15 +62,27 @@ DocDrop blends a professional cryptographic tool with a playful, hand-drawn sket
 ### 1. Registration & Key Generation
 Upon registration, the system generates a 2048-bit RSA keypair for the user. The public key is stored for verification by others, while the private key is used to sign documents.
 
-### 2. Document Signing (RSA-PSS)
+### 2. Document Signing (RSA-PKCS1v1.5)
 1. **Hashing**: The system generates a **SHA-256** digest of the document content.
 2. **Signing**: The digest is signed using the sender's **Private Key** with **PKCS1v1.5** padding, ensuring compatibility and deterministic verification.
 3. **Packaging**: The signature is attached to the document metadata and sent to the receiver.
 
 ### 3. Verification & Integrity Check
-1. **Re-Hashing**: The receiver generates a new SHA-256 digest from the received document.
-2. **Decryption**: The original signature is decrypted using the sender's **Public Key**.
-3. **Comparison**: If the hashes match, the document is verified as authentic and untampered.
+1. **Re-Hashing**: The receiver generates a new SHA-256 digest from the received document content.
+2. **Decryption/Verification**: The original signature is verified against the re-computed hash using the sender's **Public Key**.
+3. **Comparison**: If the signature is valid for the given hash, the document is verified as authentic and untampered.
+
+---
+
+## 🎓 Educational Features
+
+DocDrop includes features designed to demonstrate cryptographic concepts in a tangible way:
+
+### 🔬 Tamper Simulation
+Users can manually "tamper" with a document in their inbox. This physically modifies the `.docx` file on the server (appending hidden text). When the user subsequently runs a "Verification" check, the system will detect that the file hash no longer matches the digital signature, demonstrating a failed integrity check.
+
+### 🔍 Crypto Pipeline Visualization
+The verification process is broken down into steps, showing the re-computed hash and the signature validation status, making the "behind-the-scenes" math visible.
 
 ---
 

@@ -173,21 +173,11 @@ export default function InboxPage() {
                   <div className="space-y-8">
                     <div className="flex justify-between items-center">
                       <div>
-                        <p className="text-2xl font-hand">Message Digest (SHA-256)</p>
+                        <p className="text-2xl font-hand">Document hash</p>
                         <p className="text-[10px] uppercase font-bold opacity-30">Hash Consistency Check</p>
                       </div>
                       <span className={`font-hand text-xl px-6 py-2 border-2 rotate-2 transition-all ${verificationResult.steps.hashes_match ? "border-success text-success bg-success/5" : "border-error text-error bg-error/5"}`}>
                         {verificationResult.steps.hashes_match ? "Matched" : "Failed"}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-2xl font-hand">Digital Seal (RSA-2048)</p>
-                        <p className="text-[10px] uppercase font-bold opacity-30">Asymmetric Signature Verification</p>
-                      </div>
-                      <span className={`font-hand text-xl px-6 py-2 border-2 -rotate-2 transition-all ${verificationResult.steps.signature_valid ? "border-success text-success bg-success/5" : "border-error text-error bg-error/5"}`}>
-                        {verificationResult.steps.signature_valid ? "Authentic" : "Invalid"}
                       </span>
                     </div>
                   </div>

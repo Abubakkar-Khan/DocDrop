@@ -234,7 +234,7 @@ export default function UploadPage() {
               <motion.div key="signed" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
                 <RoughBox className="bg-white text-center p-16" options={{ roughness: 1.5, fill: "#F0FFF4", fillStyle: "zigzag" }}>
                   <DoodleIcon name="shield" size={100} color="#22AA22" className="mx-auto mb-6" />
-                  <h2 className="text-5xl font-hand text-success">Signature Verified</h2>
+                  <h2 className="text-5xl font-hand text-success">Signature Created</h2>
                   <p className="text-[10px] uppercase font-bold opacity-30 mt-4 tracking-[0.2em]">Authenticity Token Successfully Integrated</p>
                 </RoughBox>
 
