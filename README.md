@@ -139,13 +139,13 @@ sequenceDiagram
     Frontend-->>Receiver: Display verification status & visual pipeline
 ```
 
-### Class Diagram: Data Models & Architecture
+### Database Schema: SQLite Models & Relations
 
 ```mermaid
 classDiagram
     class User {
-        +id: str
-        +username: str
+        +id: str [PK]
+        +username: str [Unique]
         +password_hash: str
         +public_key: str
         +private_key: str
@@ -153,60 +153,20 @@ classDiagram
     }
 
     class Document {
-        +id: str
-        +sender_id: str
-        +receiver_id: str
+        +id: str [PK]
+        +sender_id: str [FK]
+        +receiver_id: str [FK, Nullable]
         +original_filename: str
         +file_path: str
-        +text_content: str
-        +hash_value: str
-        +signature: str
+        +text_content: str [Nullable]
+        +hash_value: str [Nullable]
+        +signature: str [Nullable]
         +status: str
         +created_at: datetime
     }
 
-    class CryptoEngine {
-        +generate_key_pair() (str, str)
-        +hash_content(text: str) str
-        +sign_hash(hash_hex: str, private_key_pem: str) str
-        +verify_signature(hash_hex: str, signature_b64: str, public_key_pem: str) bool
-    }
-
-    class DocxService {
-        +extract_text(file_path: str) str
-        +validate_docx(filename: str) bool
-    }
-
-    class AuthRoutes {
-        +POST /register
-        +POST /login
-        +GET /me
-        +GET /users
-    }
-
-    class DocumentRoutes {
-        +POST /upload
-        +POST /sign
-        +POST /send
-        +GET /inbox
-        +GET /sent
-        +GET /<doc_id>
-        +GET /<doc_id>/download
-        +POST /<doc_id>/tamper
-    }
-
-    class CryptoRoutes {
-        +POST /verify/<doc_id>
-    }
-
-    User "1" -- "*" Document : sends
-    User "1" -- "*" Document : receives
-    DocumentRoutes -- Document : manages
-    DocumentRoutes -- CryptoEngine : uses
-    DocumentRoutes -- DocxService : uses
-    CryptoRoutes -- CryptoEngine : uses
-    CryptoRoutes -- Document : verifies
-    AuthRoutes -- User : manages
+    User "1" --> "*" Document : sends (sender_id)
+    User "1" --> "*" Document : receives (receiver_id)
 ```
 
 ---
