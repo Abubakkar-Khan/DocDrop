@@ -88,44 +88,55 @@ sequenceDiagram
 
     Sender->>Frontend: 1. Upload .docx file
     Frontend->>Backend: POST /api/documents/upload
-    Backend->>Backend: Extract text from .docx
-    Backend->>Crypto: 2. hash_content(text)
-    Crypto->>Crypto: SHA-256 hashing
-    Crypto-->>Backend: document_hash
-    Backend->>DB: Create Document record
-    DB-->>Backend: doc_id, hash_value
+    Backend->>Backend: Extract text content from .docx
+    Backend->>DB: Save document metadata (text_content, sender_id, pending status)
+    Note over Backend,DB: No document hash is calculated or stored in SQL on upload
+    DB-->>Backend: Return created Document record
+    Backend-->>Frontend: Return success & Document details
 
-    Sender->>Frontend: 3. Sign document
-    Frontend->>Backend: POST /api/documents/{doc_id}/sign
-    Backend->>Crypto: sign_hash(hash, private_key)
+    Sender->>Frontend: 2. Sign document
+    Frontend->>Backend: POST /api/documents/sign (document_id)
+    Backend->>DB: Query Document (text_content)
+    DB-->>Backend: Return text_content
+    Backend->>Crypto: hash_content(text)
+    Crypto->>Crypto: Compute SHA-256 hash
+    Crypto-->>Backend: Return hash_value
+    Backend->>DB: Update Document (hash_value)
+    Note over Backend,DB: Document hash stored in SQL only during signing
+    Backend->>Crypto: sign_hash(hash_value, private_key)
     Crypto->>Crypto: RSA-2048 signing
-    Crypto-->>Backend: signature_b64
-    Backend->>DB: Update Document (signature)
-    DB-->>Backend: OK
+    Crypto-->>Backend: Return signature_b64
+    Backend->>DB: Update Document (signature, status="signed")
+    DB-->>Backend: Commit changes
+    Backend-->>Frontend: Return success & signing details
 
-    Sender->>Frontend: 4. Send to receiver
-    Frontend->>Backend: POST /api/documents/{doc_id}/send
-    Backend->>DB: Update receiver_id
-    DB-->>Backend: OK
+    Sender->>Frontend: 3. Send to receiver
+    Frontend->>Backend: POST /api/documents/send (document_id, receiver_id)
+    Backend->>DB: Update receiver_id & status="sent"
+    DB-->>Backend: Commit changes
+    Backend-->>Frontend: Return success
 
     actor Receiver
-    Receiver->>Frontend: 5. View inbox
+    Receiver->>Frontend: 4. View inbox
     Frontend->>Backend: GET /api/documents/inbox
-    Backend->>DB: Query documents
-    DB-->>Backend: Documents list
+    Backend->>DB: Query received documents
+    DB-->>Backend: Return documents list
+    Backend-->>Frontend: Return documents list
 
-    Receiver->>Frontend: 6. Verify document
+    Receiver->>Frontend: 5. Verify document
     Frontend->>Backend: POST /api/crypto/verify/{doc_id}
-    Backend->>Crypto: 7. hash_content(current_text)
-    Crypto-->>Backend: recomputed_hash
-    Backend->>Crypto: verify_signature(hash, sig, pub_key)
+    Backend->>DB: Query Document (text_content, signature, original_hash)
+    DB-->>Backend: Return Document details
+    Backend->>Crypto: hash_content(text_content)
+    Crypto-->>Backend: Return recomputed_hash
+    Backend->>Crypto: verify_signature(recomputed_hash, signature, public_key)
     Crypto->>Crypto: RSA verification
-    Crypto-->>Backend: signature_valid (bool)
-    Backend->>Backend: hashes_match = (original == recomputed)
+    Crypto-->>Backend: Return signature_valid (bool)
+    Backend->>Backend: hashes_match = (original_hash == recomputed_hash)
     Backend->>DB: Update status = verified/tampered
-    DB-->>Backend: OK
-    Backend-->>Frontend: verification_result
-    Frontend-->>Receiver: Display: Hash status + Authentic/Invalid
+    DB-->>Backend: Commit changes
+    Backend-->>Frontend: Return verification result (hashes_match & signature_valid)
+    Frontend-->>Receiver: Display verification status & visual pipeline
 ```
 
 ### Class Diagram: Data Models & Architecture
@@ -135,7 +146,6 @@ classDiagram
     class User {
         +id: str
         +username: str
-        +email: str
         +password_hash: str
         +public_key: str
         +private_key: str
@@ -144,23 +154,22 @@ classDiagram
 
     class Document {
         +id: str
-        +original_filename: str
         +sender_id: str
         +receiver_id: str
+        +original_filename: str
+        +file_path: str
         +text_content: str
         +hash_value: str
         +signature: str
         +status: str
-        +file_path: str
         +created_at: datetime
-        +updated_at: datetime
     }
 
     class CryptoEngine {
         +generate_key_pair() (str, str)
         +hash_content(text: str) str
-        +sign_hash(hash_hex: str, private_key: str) str
-        +verify_signature(hash_hex: str, sig_b64: str, pub_key: str) bool
+        +sign_hash(hash_hex: str, private_key_pem: str) str
+        +verify_signature(hash_hex: str, signature_b64: str, public_key_pem: str) bool
     }
 
     class DocxService {
@@ -172,19 +181,22 @@ classDiagram
         +POST /register
         +POST /login
         +GET /me
+        +GET /users
     }
 
     class DocumentRoutes {
         +POST /upload
-        +POST /{id}/sign
-        +POST /{id}/send
+        +POST /sign
+        +POST /send
         +GET /inbox
         +GET /sent
-        +POST /{id}/tamper
+        +GET /<doc_id>
+        +GET /<doc_id>/download
+        +POST /<doc_id>/tamper
     }
 
     class CryptoRoutes {
-        +POST /verify/{id}
+        +POST /verify/<doc_id>
     }
 
     User "1" -- "*" Document : sends
