@@ -1,5 +1,9 @@
 # DocDrop: High-Doodly Secure Digital Signatures
 
+<p align="center">
+  <img src="docdrop.png" alt="DocDrop Preview" width="800" />
+</p>
+
 DocDrop is a stylized, full-stack platform for authenticating and verifying the integrity of documents using industry-standard cryptographic primitives. It features a unique "Doodly" sketchbook aesthetic while maintaining enterprise-grade security using RSA-2048 for asymmetric encryption and SHA-256 for secure message hashing.
 
 ---
